@@ -2,11 +2,11 @@
 
 namespace App\Http\Requests\Student;
 
-use Illuminate\Contracts\Validation\Validator;
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Contracts\Validation\Validator;
 use Illuminate\Http\Exceptions\HttpResponseException;
 
-class UpdateStudentRequest extends FormRequest
+class StoreStudentRequest extends FormRequest
 {
     /**
      * Determine if the user is authorized to make this request.
@@ -24,8 +24,9 @@ class UpdateStudentRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'name' => 'sometimes|string|max:255',
-            'class_room_id' => 'sometimes|nullable|exists:class_rooms,id'
+            'name' => 'required|string|max:255',
+            'email' => 'required|string|email|max:255|unique:students',
+            'class_room_id' => 'nullable|exists:class_rooms,id'
         ];
     }
 
@@ -37,4 +38,5 @@ class UpdateStudentRequest extends FormRequest
 
         throw new HttpResponseException($response);
     }
+
 }

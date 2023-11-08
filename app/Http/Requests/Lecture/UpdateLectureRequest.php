@@ -1,10 +1,12 @@
 <?php
 
-namespace App\Http\Requests;
+namespace App\Http\Requests\Lecture;
 
+use Illuminate\Contracts\Validation\Validator;
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Http\Exceptions\HttpResponseException;
 
-class StoreLectureRequest extends FormRequest
+class UpdateLectureRequest extends FormRequest
 {
     /**
      * Determine if the user is authorized to make this request.
@@ -22,7 +24,17 @@ class StoreLectureRequest extends FormRequest
     public function rules(): array
     {
         return [
-            //
+            'topic' => 'required|unique:lectures,topic,' . $this->lecture->id,
+            'description' => 'required',
         ];
+    }
+
+    protected function failedValidation(Validator $validator): HttpResponseException
+    {
+        $response = response()->json([
+            'errors' => $validator->errors(),
+        ], 422);
+
+        throw new HttpResponseException($response);
     }
 }

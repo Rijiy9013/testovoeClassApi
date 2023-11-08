@@ -2,9 +2,11 @@
 
 namespace App\Http\Requests\ClassRoom;
 
+use Illuminate\Contracts\Validation\Validator;
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Http\Exceptions\HttpResponseException;
 
-class StoreClassRoomRequest extends FormRequest
+class UpdateClassRoomRequest extends FormRequest
 {
     /**
      * Determine if the user is authorized to make this request.
@@ -22,7 +24,16 @@ class StoreClassRoomRequest extends FormRequest
     public function rules(): array
     {
         return [
-            //
+            'name' => 'required|unique:class_rooms,name,' . $this->classroom->id,
         ];
+    }
+
+    protected function failedValidation(Validator $validator): HttpResponseException
+    {
+        $response = response()->json([
+            'errors' => $validator->errors(),
+        ], 422);
+
+        throw new HttpResponseException($response);
     }
 }
