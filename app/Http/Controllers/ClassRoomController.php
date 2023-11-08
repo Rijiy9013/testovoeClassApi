@@ -73,10 +73,6 @@ class ClassRoomController extends Controller
      */
     public function createPlan(StoreClassRoomPlanRequest $request, ClassRoom $classroom): JsonResponse
     {
-        // Проверяем, есть ли уже учебный план
-        if ($classroom->lectures()->count() > 0) {
-            return response()->json(['message' => 'Plan already exists'], 409);
-        }
 
         // Создаем новый учебный план
         $this->classRoomService->syncLecturesWithOrder($classroom, $request->validated()['lectures']);
@@ -95,9 +91,14 @@ class ClassRoomController extends Controller
      */
     public function showPlan(ClassRoom $classroom): JsonResponse
     {
-        $plan = $classroom->lectures()->orderBy('pivot_order')->get(['lectures.*', 'class_room_lecture.order']);
+        $lectures = $classroom->lectures()
+            ->orderBy('pivot_order')
+            ->get(['lectures.*', 'class_room_lecture.order as order']);
 
-        return response()->json($plan);
+        return response()->json([
+            'class_name' => $classroom->name, // указано, что нужен только список лекций
+            'lectures' => $lectures
+        ]);
     }
 
     /**

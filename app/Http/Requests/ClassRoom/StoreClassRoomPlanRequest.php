@@ -2,6 +2,7 @@
 
 namespace App\Http\Requests\ClassRoom;
 
+use App\Rules\UniqueLectureRule;
 use Illuminate\Contracts\Validation\Validator;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Http\Exceptions\HttpResponseException;
@@ -30,11 +31,7 @@ class StoreClassRoomPlanRequest extends FormRequest
             'lectures' => [
                 'array',
                 'required',
-                function ($attribute, $value, $fail) { // проверка на уникальность лекций, можно вынести в отдельное правило
-                    if (count($value) !== count(array_unique(Arr::pluck($value, 'id')))) {
-                        return $fail('Each lecture in the class room plan must be unique.');
-                    }
-                },
+                new UniqueLectureRule(),
             ],
             'lectures.*.id' => 'required|exists:lectures,id',
             'lectures.*.order' => 'required|integer|min:1'
@@ -55,7 +52,7 @@ class StoreClassRoomPlanRequest extends FormRequest
         $validator->after(function ($validator) {
             // Проверяем, есть ли уже учебный план для класса
             if ($this->classRoomHasPlan()) {
-                $validator->errors()->add('class_room_id', 'Plan already exists');
+                $validator->errors()->add('class_room_id', 'Plan for this class room already exists');
             }
         });
     }
@@ -67,18 +64,13 @@ class StoreClassRoomPlanRequest extends FormRequest
     private function classRoomHasPlan(): bool
     {
         // Используем route() для извлечения переменной {classroom} из URL, если она там есть
-        $classRoomId = $this->route('classroom');
-
-        // Если класс не найден, вернём false
-        if (!$classRoomId) {
+        $classRoom = $this->route('classroom');
+        if (!$classRoom) {
             return false;
         }
-
-        // Проверяем, есть ли связанные записи в таблице class_room_lecture
         $count = DB::table('class_room_lecture')
-            ->where('class_room_id', $classRoomId)
+            ->where('class_room_id', $classRoom->id)
             ->count();
-
         return $count > 0;
     }
 }

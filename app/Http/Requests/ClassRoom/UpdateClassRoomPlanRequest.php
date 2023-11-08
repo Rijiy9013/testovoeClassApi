@@ -2,10 +2,10 @@
 
 namespace App\Http\Requests\ClassRoom;
 
+use App\Rules\UniqueLectureRule;
 use Illuminate\Contracts\Validation\Validator;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Http\Exceptions\HttpResponseException;
-use Illuminate\Support\Arr;
 
 class UpdateClassRoomPlanRequest extends FormRequest
 {
@@ -29,11 +29,7 @@ class UpdateClassRoomPlanRequest extends FormRequest
             'lectures' => [
                 'required',
                 'array',
-                function ($attribute, $value, $fail) { // проверка на уникальность лекций, можно вынести в отдельное правило
-                    if (count($value) !== count(array_unique(Arr::pluck($value, 'id')))) {
-                        return $fail('Each lecture in the class room plan must be unique.');
-                    }
-                },
+                new UniqueLectureRule(),
             ],
             'lectures.*.id' => 'required|exists:lectures,id',
             'lectures.*.order' => 'required|integer|min:1'
