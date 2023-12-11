@@ -34,7 +34,7 @@ class StoreClassRoomPlanRequest extends FormRequest
                 new UniqueLectureRule(),
             ],
             'lectures.*.id' => 'required|exists:lectures,id',
-            'lectures.*.order' => 'required|integer|min:1'
+            'lectures.*.order' => 'required|integer|min:1',
         ];
     }
 
